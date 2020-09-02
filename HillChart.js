@@ -304,7 +304,7 @@ function encodeURL()
 
 function decodeURL(url)
 {
-    if (!url || url == "/#")
+    if (!url || url == "#/")
     {
         return;
     }
