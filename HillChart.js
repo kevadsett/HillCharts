@@ -187,6 +187,7 @@ function animate() {
         var pointIndex = plotPoints.indexOf(pointsToDelete[i]);
         plotPoints.splice(pointIndex, 1);
     }
+    updateUsedColourList();
     if (pointsToDelete.length > 0)
     {
         encodeURL();
