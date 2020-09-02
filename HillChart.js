@@ -6,20 +6,7 @@ function SimpleVector(x, y)
 
 function PlotPoint(label, x, colour = "")
 {
-    if (colour == "")
-    {
-        var newColour = lastColour;
-        while (newColour == lastColour)
-        {
-            newColour = colourScheme[Math.floor(Math.random() * colourScheme.length)];
-        }
-        lastColour = newColour;
-        this.colour = newColour;
-    }
-    else
-    {
-        this.colour = colour;
-    }
+    this.colour = colour == "" ? getUnusedColour() : colour;
     this.position = new SimpleVector(x, getYPosition(x));
     this.label = label;
     this.selected = false;
@@ -27,19 +14,20 @@ function PlotPoint(label, x, colour = "")
     this.markedForDelete = false;
 }
 
-var lastColour = "";
 var colourScheme = [
-    "#EA7186",
-    "#F2C79E",
-    "#7A77B9",
-    "#BD9DEA",
+    "#ea7186",
+    "#f2c79e",
+    "#7a77b9",
+    "#bd9dea",
     "#81b7ba",
     "#e64a32",
     "#42b3a4",
-    "#2C788D"
+    "#2c788d"
 ];
-var canvas = document.getElementById("MainCanvas");
 
+var colourCounts = {};
+
+var canvas = document.getElementById("MainCanvas");
 var ctx = canvas.getContext("2d");
 var offset = 40;
 var curveHeight = canvas.height - offset;
@@ -47,6 +35,7 @@ var mousePos = new SimpleVector(0, 0);
 var plostPos = new SimpleVector(0, 0);
 var radius = 15;
 var plotPoints = [];
+var pointsToDelete = [];
 
 function getMousePos(mouseEvent)
 {
@@ -112,6 +101,7 @@ canvas.addEventListener("mousedown", function(evt)
         newPoint.position.y = getYPosition(pos.x);
         newPoint.selected = true;
         plotPoints.push(newPoint);
+        updateUsedColourList();
     }
 }, false);
 
@@ -183,8 +173,17 @@ function animate() {
             pointsToDelete.push(point);
         }
     }
+    var coloursRemoved = {};
     for (var i = 0; i < pointsToDelete.length; i++)
     {
+        if (coloursRemoved[pointsToDelete[i].colour])
+        {
+            coloursRemoved[pointsToDelete[i].colour]++;
+        }
+        else
+        {
+            coloursRemoved[pointsToDelete[i].colour] = 1;
+        }
         var pointIndex = plotPoints.indexOf(pointsToDelete[i]);
         plotPoints.splice(pointIndex, 1);
     }
@@ -194,13 +193,55 @@ function animate() {
         pointsToDelete = [];
     }
     drawGraph();
-  }
+}
+
+function updateUsedColourList()
+{
+    colourCounts = {};
+    for (var i = 0; i < colourScheme.length; i++)
+    {
+        colourCounts[colourScheme[i]] = 0;
+    }
+
+    for (var i = 0; i < plotPoints.length; i++)
+    {
+        colourCounts[plotPoints[i].colour]++;
+    }
+
+    for (var i = 0; i < pointsToDelete.length; i++)
+    {
+        colourCounts[pointsToDelete]--;
+    }
+
+    console.log(colourCounts);
+}
+
+function getUnusedColour()
+{
+    var potentialColours = [];
+    var lowestCount = Infinity;
+    for (var key in colourCounts)
+    {
+        if (colourCounts[key] < lowestCount)
+        {
+            lowestCount = colourCounts[key];
+        }
+    }
+    for (var key in colourCounts)
+    {
+        if (colourCounts[key] == lowestCount)
+        {
+            potentialColours.push(key);
+        }
+    }
+    return potentialColours[(Math.floor(Math.random() * potentialColours.length))];
+}
   
-  function main()
-  {
-      decodeURL(window.location.hash);
-      animate();
-  }
+function main()
+{
+    decodeURL(window.location.hash);
+    animate();
+}
 
 function drawGraph()
 {
@@ -306,6 +347,7 @@ function decodeURL(url)
 {
     if (!url || url == "#/")
     {
+        updateUsedColourList();
         return;
     }
     url = url.substring(2);
@@ -320,4 +362,5 @@ function decodeURL(url)
         var point = new PlotPoint(label, xPos, colour);
         plotPoints.push(point);
     }
+    updateUsedColourList();
 }
