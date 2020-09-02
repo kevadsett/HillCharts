@@ -1,0 +1,10 @@
+#MainCanvas
+{
+    width:1024px;
+    height:512px;
+}
+
+*:focus
+{
+    outline:none;
+}
