@@ -8,7 +8,13 @@ function PlotPoint(label, x, colour = "")
 {
     if (colour == "")
     {
-        this.colour = "#" + Math.floor((Math.random() * 16777215)).toString(16);
+        var newColour = lastColour;
+        while (newColour == lastColour)
+        {
+            newColour = colourScheme[Math.floor(Math.random() * colourScheme.length)];
+        }
+        lastColour = newColour;
+        this.colour = newColour;
     }
     else
     {
@@ -21,6 +27,17 @@ function PlotPoint(label, x, colour = "")
     this.markedForDelete = false;
 }
 
+var lastColour = "";
+var colourScheme = [
+    "#EA7186",
+    "#F2C79E",
+    "#7A77B9",
+    "#BD9DEA",
+    "#81b7ba",
+    "#e64a32",
+    "#42b3a4",
+    "#2C788D"
+];
 var canvas = document.getElementById("MainCanvas");
 
 var ctx = canvas.getContext("2d");
@@ -189,7 +206,7 @@ function drawGraph()
 {
     ctx.lineWidth = 1;
 
-    ctx.fillStyle = "#eee";
+    ctx.fillStyle = "#EBE8E7";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.moveTo(0, canvas.height - offset);
