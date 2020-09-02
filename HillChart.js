@@ -136,7 +136,7 @@ canvas.addEventListener("keydown", function(evt)
             continue;
         }
         
-        if (evt.keyCode == 55 || evt.keyCode == 186)
+        if (evt.key == "&" || evt.key == ";")
         {
             // ampersand and semi-colon are reserved for parsing the URL
             return;
