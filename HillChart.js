@@ -25,6 +25,7 @@ function PlotPoint(label, x, colour = "")
     this.markedForDelete = false;
     this.textAlign = ALIGN_LEFT;
     this.textWidth = 0;
+    this.calculateAlignment();
 }
 
 PlotPoint.prototype = {
