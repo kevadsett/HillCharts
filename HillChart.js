@@ -1,7 +1,18 @@
+var ALIGN_LEFT = "left";
+var ALIGN_RIGHT = "right";
+
 function SimpleVector(x, y)
 {
     this.x = x;
     this.y = y;
+}
+
+function Rect(top, right, bottom, left)
+{
+    this.top = top;
+    this.right = right;
+    this.bottom = bottom;
+    this.left = left;
 }
 
 function PlotPoint(label, x, colour = "")
@@ -12,7 +23,56 @@ function PlotPoint(label, x, colour = "")
     this.selected = false;
     this.moving = false;
     this.markedForDelete = false;
+    this.textAlign = ALIGN_LEFT;
+    this.textWidth = 0;
 }
+
+PlotPoint.prototype = {
+    isWithinBounds: function(pos, includeText)
+    {
+        var hitX = false, hitY = false;
+
+        if (includeText)
+        {
+            var bounds = this.getBounds();
+            hitX = pos.x > bounds.left && pos.x < bounds.right;
+            hitY = pos.y > bounds.top && pos.y < bounds.bottom;
+        }
+        else
+        {
+            hitX = pos.x > this.position.x - radius && pos.x < this.position.x + radius;
+            hitY = pos.y > this.position.y - radius && pos.y < this.position.y + radius;
+        }
+        return hitX && hitY;
+    },
+    getBounds: function()
+    {
+        var bounds = new Rect(this.position.y - radius, this.position.x + radius, this.position.y + radius, this.position.x - radius);
+        switch (this.textAlign)
+        {
+            case ALIGN_LEFT:
+                bounds.right += this.textWidth;
+                break;
+            case ALIGN_RIGHT:
+                bounds.left -= this.textWidth;
+                break;
+        }
+        return bounds;
+    },
+    calculateAlignment: function()
+    {
+        if (!this.label)
+        {
+            this.textAlign = ALIGN_LEFT;
+            this.textWidth = radius + 5;
+            return;
+        }
+
+        ctx.font = "24px sans-serif";
+        this.textWidth = ctx.measureText(this.label).width + radius + 5;
+        this.textAlign = this.textWidth < canvas.width - this.position.x ? ALIGN_LEFT : ALIGN_RIGHT;
+    }
+};
 
 var colourScheme = [
     "#ea7186",
@@ -36,6 +96,9 @@ var plostPos = new SimpleVector(0, 0);
 var radius = 15;
 var plotPoints = [];
 var pointsToDelete = [];
+
+var currentlyShowingCarat;
+var caratFlashSpeed = "500";
 
 function getMousePos(mouseEvent)
 {
@@ -62,6 +125,7 @@ canvas.addEventListener("mousemove", function(evt)
         
         plotPoints[i].position.x = mousePos.x;
         plotPoints[i].position.y = getYPosition(mousePos.x);
+        plotPoints[i].calculateAlignment();
     }
 }, false);
 
@@ -71,9 +135,13 @@ canvas.addEventListener("mousedown", function(evt)
     for (var i = 0; i < plotPoints.length; i++)
     {
         var plot = plotPoints[i];
-        var hitX = pos.x > plot.position.x - radius && pos.x < plot.position.x + radius;
-        var hitY = pos.y > plot.position.y - radius && pos.y < plot.position.y + radius;
-        if (hitX && hitY)
+        var withinPoint = plot.isWithinBounds(pos, false);
+        var withinPointAndText = plot.isWithinBounds(pos, true);
+        if (withinPoint)
+        {
+            plot.moving = true;
+        }
+        if (withinPointAndText)
         {
             for (var j = 0; j < plotPoints.length; j++)
             {
@@ -83,7 +151,6 @@ canvas.addEventListener("mousedown", function(evt)
                 }
                 plotPoints[j].selected = false;
             }
-            plot.moving = true;
             plot.selected = true;
             return;
         }
@@ -136,6 +203,7 @@ canvas.addEventListener("keydown", function(evt)
         {
             // use "Enter" to de-select and exit text-editing
             point.selected = false;
+            point.calculateAlignment();
             encodeURL();
             return;
         }
@@ -155,6 +223,7 @@ canvas.addEventListener("keydown", function(evt)
                     break;
             }
         }
+        point.calculateAlignment();
     }
     encodeURL();
 })
@@ -213,8 +282,6 @@ function updateUsedColourList()
     {
         colourCounts[pointsToDelete]--;
     }
-
-    console.log(colourCounts);
 }
 
 function getUnusedColour()
@@ -241,6 +308,10 @@ function getUnusedColour()
 function main()
 {
     decodeURL(window.location.hash);
+    setInterval(function()
+    {
+        currentlyShowingCarat = !currentlyShowingCarat;
+    }, caratFlashSpeed)
     animate();
 }
 
@@ -316,15 +387,34 @@ function plotPoint(ctx, plotPoint)
     ctx.textBaseline = 'middle';
     ctx.font = "24px sans-serif";
     ctx.fillStyle = plotPoint.selected ? plotPoint.colour : "#000";
-    if (ctx.measureText(plotPoint.label).width * 2 < canvas.width - plotPoint.position.x)
+
+    if (plotPoint.textWidth < canvas.width - plotPoint.position.x)
     {
         ctx.textAlign = 'left';
         ctx.fillText(plotPoint.label, plotPoint.position.x + radius + 5, plotPoint.position.y);
+
+        if (plotPoint.selected && currentlyShowingCarat)
+        {
+            ctx.beginPath();
+            ctx.strokeStyle = "#555";
+            ctx.moveTo(plotPoint.position.x + plotPoint.textWidth + 2, plotPoint.position.y + radius);
+            ctx.lineTo(plotPoint.position.x + plotPoint.textWidth + 2, plotPoint.position.y - radius);
+            ctx.stroke();
+        }
     }
     else
     {
         ctx.textAlign = 'right';
-        ctx.fillText(plotPoint.label, plotPoint.position.x - radius - 5, plotPoint.position.y);
+        ctx.fillText(plotPoint.label, plotPoint.position.x - radius - 7, plotPoint.position.y);
+
+        if (plotPoint.selected && currentlyShowingCarat)
+        {
+            ctx.beginPath();
+            ctx.strokeStyle = "#555";
+            ctx.moveTo(plotPoint.position.x - radius - 5, plotPoint.position.y + radius);
+            ctx.lineTo(plotPoint.position.x - radius - 5, plotPoint.position.y - radius);
+            ctx.stroke();
+        }
     }
 }
 
@@ -361,6 +451,7 @@ function decodeURL(url)
         var xPos = parseInt(dataTokens[1]);
         var colour = "#" + dataTokens[2].padStart(6, "0");
         var point = new PlotPoint(label, xPos, colour);
+        point.calculateAlignment();
         plotPoints.push(point);
     }
     updateUsedColourList();
