@@ -1,22 +1,19 @@
 var ALIGN_LEFT = "left";
 var ALIGN_RIGHT = "right";
 
-function SimpleVector(x, y)
-{
+function SimpleVector(x, y) {
     this.x = x;
     this.y = y;
 }
 
-function Rect(top, right, bottom, left)
-{
+function Rect(top, right, bottom, left) {
     this.top = top;
     this.right = right;
     this.bottom = bottom;
     this.left = left;
 }
 
-function PlotPoint(label, x, colour = "")
-{
+function PlotPoint(label, x, colour = "") {
     this.colour = colour == "" ? getUnusedColour() : colour;
     this.position = new SimpleVector(x, getYPosition(x));
     this.label = label;
@@ -29,28 +26,23 @@ function PlotPoint(label, x, colour = "")
 }
 
 PlotPoint.prototype = {
-    isWithinBounds: function(pos, includeText)
-    {
+    isWithinBounds: function (pos, includeText) {
         var hitX = false, hitY = false;
 
-        if (includeText)
-        {
+        if (includeText) {
             var bounds = this.getBounds();
             hitX = pos.x > bounds.left && pos.x < bounds.right;
             hitY = pos.y > bounds.top && pos.y < bounds.bottom;
         }
-        else
-        {
+        else {
             hitX = pos.x > this.position.x - radius && pos.x < this.position.x + radius;
             hitY = pos.y > this.position.y - radius && pos.y < this.position.y + radius;
         }
         return hitX && hitY;
     },
-    getBounds: function()
-    {
+    getBounds: function () {
         var bounds = new Rect(this.position.y - radius, this.position.x + radius, this.position.y + radius, this.position.x - radius);
-        switch (this.textAlign)
-        {
+        switch (this.textAlign) {
             case ALIGN_LEFT:
                 bounds.right += this.textWidth;
                 break;
@@ -60,94 +52,87 @@ PlotPoint.prototype = {
         }
         return bounds;
     },
-    calculateAlignment: function()
-    {
-        if (!this.label)
-        {
+    calculateAlignment: function () {
+        if (!this.label) {
             this.textAlign = ALIGN_LEFT;
             this.textWidth = radius + 5;
             return;
         }
 
-        ctx.font = "24px sans-serif";
+        ctx.font = "16px sans-serif";
         this.textWidth = ctx.measureText(this.label).width + radius + 5;
         this.textAlign = this.textWidth < canvas.width - this.position.x ? ALIGN_LEFT : ALIGN_RIGHT;
     }
 };
 
 var colourScheme = [
-    "#ea7186",
-    "#f2c79e",
-    "#7a77b9",
-    "#bd9dea",
-    "#81b7ba",
-    "#e64a32",
-    "#42b3a4",
-    "#2c788d"
+    "#1abc9c",
+    "#3498db",
+    "#9b59b6",
+    "#34495e",
+    "#f1c40f",
+    "#e67e22",
+    "#e74c3c",
+    "#95a5a6",
+    "#8e44ad",
+    "#2c3e50",
+    "#2980b9",
+    "#27ae60",
+    "#16a085",
+    "#f39c12"
 ];
 
 var colourCounts = {};
 
-var canvas = document.getElementById("MainCanvas");
+var canvas = document.getElementById("main");
 var ctx = canvas.getContext("2d");
 var offset = 40;
 var curveHeight = canvas.height - offset;
 var mousePos = new SimpleVector(0, 0);
 var plostPos = new SimpleVector(0, 0);
-var radius = 15;
+var radius = 12;
 var plotPoints = [];
 var pointsToDelete = [];
 
 var currentlyShowingCarat;
 var caratFlashSpeed = "500";
 
-function getMousePos(mouseEvent)
-{
+function getMousePos(mouseEvent) {
     var rect = canvas.getBoundingClientRect();
     return new SimpleVector(mouseEvent.clientX - rect.left, mouseEvent.clientY - rect.top);
 }
 
-function positionIsOnCurve(pos)
-{
+function positionIsOnCurve(pos) {
     var requiredY = getYPosition(pos.x);
     var hitY = pos.y > requiredY - radius && pos.y < requiredY + radius;
     return hitY;
 }
 
-canvas.addEventListener("mousemove", function(evt)
-{
+canvas.addEventListener("mousemove", function (evt) {
     mousePos = getMousePos(evt);
-    for (var i = 0; i < plotPoints.length; i++)
-    {
-        if (plotPoints[i].moving == false)
-        {
+    for (var i = 0; i < plotPoints.length; i++) {
+        if (plotPoints[i].moving == false) {
             continue;
         }
-        
+
         plotPoints[i].position.x = mousePos.x;
         plotPoints[i].position.y = getYPosition(mousePos.x);
         plotPoints[i].calculateAlignment();
     }
 }, false);
 
-canvas.addEventListener("mousedown", function(evt)
-{
+canvas.addEventListener("mousedown", function (evt) {
     var pos = getMousePos(evt);
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+    for (var i = 0; i < plotPoints.length; i++) {
         var plot = plotPoints[i];
         var withinPoint = plot.isWithinBounds(pos, false);
         var withinPointAndText = plot.isWithinBounds(pos, true);
-        if (withinPoint)
-        {
+        if (withinPoint) {
             plot.moving = true;
         }
-        if (withinPointAndText)
-        {
-            for (var j = 0; j < plotPoints.length; j++)
-            {
-                if (i == j)
-                {
+        if (withinPointAndText) {
+            for (var j = 0; j < plotPoints.length; j++) {
+                if (i == j) {
                     continue;
                 }
                 plotPoints[j].selected = false;
@@ -157,13 +142,11 @@ canvas.addEventListener("mousedown", function(evt)
         }
     }
 
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+    for (var i = 0; i < plotPoints.length; i++) {
         plotPoints[i].selected = false;
     }
 
-    if (positionIsOnCurve(pos))
-    {
+    if (positionIsOnCurve(pos)) {
         var newPoint = new PlotPoint("");
         newPoint.position.x = pos.x;
         newPoint.position.y = getYPosition(pos.x);
@@ -173,49 +156,39 @@ canvas.addEventListener("mousedown", function(evt)
     }
 }, false);
 
-canvas.addEventListener("mouseup", function(evt)
-{
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+canvas.addEventListener("mouseup", function (evt) {
+    for (var i = 0; i < plotPoints.length; i++) {
         plotPoints[i].moving = false;
     }
     encodeURL();
-    
+
 }, false);
 
 canvas.tabIndex = 1000;
-canvas.addEventListener("keydown", function(evt)
-{
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+canvas.addEventListener("keydown", function (evt) {
+    for (var i = 0; i < plotPoints.length; i++) {
         var point = plotPoints[i];
-        if (point.selected == false)
-        {
+        if (point.selected == false) {
             continue;
         }
-        
-        if (evt.key == "&" || evt.key == ";")
-        {
+
+        if (evt.key == "&" || evt.key == ";") {
             // ampersand and semi-colon are reserved for parsing the URL
             return;
         }
 
-        if (evt.keyCode == 13)
-        {
+        if (evt.keyCode == 13) {
             // use "Enter" to de-select and exit text-editing
             point.selected = false;
             point.calculateAlignment();
             encodeURL();
             return;
         }
-        if ((evt.keyCode >= 48 && evt.keyCode <= 192) || evt.keyCode == 32)
-        {
+        if ((evt.keyCode >= 48 && evt.keyCode <= 192) || evt.keyCode == 32) {
             point.label += evt.key;
         }
-        else
-        {
-            switch (evt.key)
-            {
+        else {
+            switch (evt.key) {
                 case "Backspace":
                     point.label = point.label.substring(0, point.label.length - 1);
                     break;
@@ -235,92 +208,75 @@ function animate() {
     // clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     pointsToDelete = [];
-    for(var i = 0; i < plotPoints.length; i++)
-    {
+    for (var i = 0; i < plotPoints.length; i++) {
         var point = plotPoints[i];
-        if (point.markedForDelete)
-        {
+        if (point.markedForDelete) {
             pointsToDelete.push(point);
         }
     }
     var coloursRemoved = {};
-    for (var i = 0; i < pointsToDelete.length; i++)
-    {
-        if (coloursRemoved[pointsToDelete[i].colour])
-        {
+    for (var i = 0; i < pointsToDelete.length; i++) {
+        if (coloursRemoved[pointsToDelete[i].colour]) {
             coloursRemoved[pointsToDelete[i].colour]++;
         }
-        else
-        {
+        else {
             coloursRemoved[pointsToDelete[i].colour] = 1;
         }
         var pointIndex = plotPoints.indexOf(pointsToDelete[i]);
         plotPoints.splice(pointIndex, 1);
     }
     updateUsedColourList();
-    if (pointsToDelete.length > 0)
-    {
+    if (pointsToDelete.length > 0) {
         encodeURL();
         pointsToDelete = [];
     }
     drawGraph();
+    updateFieldUrl();
 }
 
-function updateUsedColourList()
-{
+function updateUsedColourList() {
     colourCounts = {};
-    for (var i = 0; i < colourScheme.length; i++)
-    {
+    for (var i = 0; i < colourScheme.length; i++) {
         colourCounts[colourScheme[i]] = 0;
     }
 
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+    for (var i = 0; i < plotPoints.length; i++) {
         colourCounts[plotPoints[i].colour]++;
     }
 
-    for (var i = 0; i < pointsToDelete.length; i++)
-    {
+    for (var i = 0; i < pointsToDelete.length; i++) {
         colourCounts[pointsToDelete]--;
     }
 }
 
-function getUnusedColour()
-{
+function getUnusedColour() {
     var potentialColours = [];
     var lowestCount = Infinity;
-    for (var key in colourCounts)
-    {
-        if (colourCounts[key] < lowestCount)
-        {
+    for (var key in colourCounts) {
+        if (colourCounts[key] < lowestCount) {
             lowestCount = colourCounts[key];
         }
     }
-    for (var key in colourCounts)
-    {
-        if (colourCounts[key] == lowestCount)
-        {
+    for (var key in colourCounts) {
+        if (colourCounts[key] == lowestCount) {
             potentialColours.push(key);
         }
     }
     return potentialColours[(Math.floor(Math.random() * potentialColours.length))];
 }
-  
-function main()
-{
+
+function init() {
     decodeURL(window.location.hash);
-    setInterval(function()
-    {
+    setInterval(function () {
         currentlyShowingCarat = !currentlyShowingCarat;
     }, caratFlashSpeed)
     animate();
 }
 
-function drawGraph()
-{
+function drawGraph() {
     ctx.lineWidth = 1;
 
-    ctx.fillStyle = "#EBE8E7";
+    ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.moveTo(0, canvas.height - offset);
@@ -330,8 +286,7 @@ function drawGraph()
 
     var dashHeight = 5;
     ctx.beginPath();
-    for (var i = canvas.height - offset; i > canvas.height - curveHeight + dashHeight * 2 - offset; i-=dashHeight * 2)
-    {
+    for (var i = canvas.height - offset; i > canvas.height - curveHeight + dashHeight * 2 - offset; i -= dashHeight * 2) {
         ctx.moveTo(canvas.width / 2, i);
         ctx.lineTo(canvas.width / 2, i - dashHeight);
     }
@@ -339,34 +294,31 @@ function drawGraph()
 
     ctx.textBaseline = "top";
     ctx.textAlign = "right";
-    ctx.font = "24px sans-serif";
+    ctx.font = "16px system-ui, 'Segoe UI', Tahoma";
     ctx.fillStyle = "#fff";
-    ctx.fillText("FIGURING THINGS OUT", canvas.width / 2 - 50, canvas.height - offset + 6);
+    ctx.fillText("FIGURING THINGS OUT", canvas.width / 2 - 100, canvas.height - offset + 15);
     ctx.fillStyle = "#a0a0a0";
-    ctx.fillText("FIGURING THINGS OUT", canvas.width / 2 - 50, canvas.height - offset + 5);
+    ctx.fillText("FIGURING THINGS OUT", canvas.width / 2 - 100, canvas.height - offset + 14);
     ctx.textAlign = "left";
     ctx.fillStyle = "#fff";
-    ctx.fillText("MAKING THINGS HAPPEN", canvas.width / 2 + 50, canvas.height - offset + 6);
+    ctx.fillText("MAKING THINGS HAPPEN", canvas.width / 2 + 100, canvas.height - offset + 15);
     ctx.fillStyle = "#a0a0a0";
-    ctx.fillText("MAKING THINGS HAPPEN", canvas.width / 2 + 50, canvas.height - offset + 5);
+    ctx.fillText("MAKING THINGS HAPPEN", canvas.width / 2 + 100, canvas.height - offset + 14);
 
     ctx.beginPath();
-    for(var i = 0; i <= canvas.width; i+=20)
-    {
-      ctx.lineTo(i, getYPosition(i));
+    for (var i = 0; i <= canvas.width; i += 20) {
+        ctx.lineTo(i, getYPosition(i));
     }
     ctx.strokeStyle = "#000"
     ctx.stroke();
     ctx.closePath();
-    
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+
+    for (var i = 0; i < plotPoints.length; i++) {
         plotPoint(ctx, plotPoints[i]);
     }
 }
 
-function getYPosition(xPosition)
-{
+function getYPosition(xPosition) {
     var high = canvas.width + canvas.width / 2;
     var low = -canvas.width / 2;
     var progress = ((xPosition / canvas.width) * (high - low) + low) / canvas.width;
@@ -375,8 +327,7 @@ function getYPosition(xPosition)
     // return (canvas.height - curveHeight / 2 * Math.sin(progress));
 }
 
-function plotPoint(ctx, plotPoint)
-{
+function plotPoint(ctx, plotPoint) {
     ctx.beginPath();
     ctx.arc(plotPoint.position.x, plotPoint.position.y, radius, 0, 360);
     ctx.strokeStyle = plotPoint.selected ? "#fff" : "#000";
@@ -386,16 +337,14 @@ function plotPoint(ctx, plotPoint)
     ctx.fill();
     ctx.closePath();
     ctx.textBaseline = 'middle';
-    ctx.font = "24px sans-serif";
+    ctx.font = "16px system-ui, 'Segoe UI', Tahoma";
     ctx.fillStyle = plotPoint.selected ? plotPoint.colour : "#000";
 
-    if (plotPoint.textWidth < canvas.width - plotPoint.position.x)
-    {
+    if (plotPoint.textWidth < canvas.width - plotPoint.position.x) {
         ctx.textAlign = 'left';
         ctx.fillText(plotPoint.label, plotPoint.position.x + radius + 5, plotPoint.position.y);
 
-        if (plotPoint.selected && currentlyShowingCarat)
-        {
+        if (plotPoint.selected && currentlyShowingCarat) {
             ctx.beginPath();
             ctx.strokeStyle = "#555";
             ctx.moveTo(plotPoint.position.x + plotPoint.textWidth + 2, plotPoint.position.y + radius);
@@ -403,13 +352,11 @@ function plotPoint(ctx, plotPoint)
             ctx.stroke();
         }
     }
-    else
-    {
+    else {
         ctx.textAlign = 'right';
         ctx.fillText(plotPoint.label, plotPoint.position.x - radius - 7, plotPoint.position.y);
 
-        if (plotPoint.selected && currentlyShowingCarat)
-        {
+        if (plotPoint.selected && currentlyShowingCarat) {
             ctx.beginPath();
             ctx.strokeStyle = "#555";
             ctx.moveTo(plotPoint.position.x - radius - 5, plotPoint.position.y + radius);
@@ -419,14 +366,11 @@ function plotPoint(ctx, plotPoint)
     }
 }
 
-function encodeURL()
-{
+function encodeURL() {
     var url = "";
-    for (var i = 0; i < plotPoints.length; i++)
-    {
+    for (var i = 0; i < plotPoints.length; i++) {
         var point = plotPoints[i];
-        if (i > 0)
-        {
+        if (i > 0) {
             url += "&";
         }
         url += encodeURI(point.label) + ";" + point.position.x + ";" + point.colour.substring(1).padStart(6, "0");
@@ -435,17 +379,14 @@ function encodeURL()
     return url;
 }
 
-function decodeURL(url)
-{
-    if (!url || url == "#/")
-    {
+function decodeURL(url) {
+    if (!url || url == "#/") {
         updateUsedColourList();
         return;
     }
     url = url.substring(2);
     var plotPointStrings = url.split("&");
-    for (var i = 0; i < plotPointStrings.length; i++)
-    {
+    for (var i = 0; i < plotPointStrings.length; i++) {
         var PlotPointString = plotPointStrings[i];
         var dataTokens = PlotPointString.split(";");
         var label = decodeURI(dataTokens[0]);
@@ -457,3 +398,56 @@ function decodeURL(url)
     }
     updateUsedColourList();
 }
+
+function updateFieldUrl() {
+
+    const input = document.getElementById('url-field')
+
+    input.value = window.location.href
+
+}
+
+function copyImage() {
+
+    var canvas = document.getElementById("main");
+
+    canvas.toBlob(blob => {
+
+        try {
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': blob
+                })
+            ]);
+        } catch (error) {
+            console.error(error);
+        }
+
+    })
+
+}
+
+function copyDisabledInput(inputId) {
+    // Get the disabled input field
+    var input = document.getElementById(inputId);
+
+    // Create a new text field
+    var tempInput = document.createElement('input');
+
+    // Set the value of the new text field to the value of the disabled input field
+    tempInput.value = input.value;
+
+    // Add the new text field to the page
+    document.body.appendChild(tempInput);
+
+    // Select the text in the new text field
+    tempInput.select();
+
+    // Copy the selected text to the clipboard
+    document.execCommand('copy');
+
+    // Remove the new text field from the page
+    document.body.removeChild(tempInput);
+}
+
+init()

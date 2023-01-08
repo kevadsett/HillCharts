@@ -1,20 +1,125 @@
 <!doctype html>
-
 <html lang="en">
-<head>
-  <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
+    <title>HillChart Maker - NextPress</title>
+    <meta name="description" content="HTML 5 Canvas-based creator for Hill
+      Charts (as develloped by Basecamp)">
+    <meta name="author" content="NextPress">
+    <link rel="stylesheet" href="hillchart.css">
+    <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
 
-  <title>Hillchart</title>
-  <meta name="description" content="HTML 5 canvas Hillchart">
-  <meta name="author" content="Kev Adsett">
+  <body>
 
-  <link rel="stylesheet" href="HillChart.css">
+    <header class="max-w-5xl my-6 mx-auto">
+      <div class="md:flex md:items-center justify-apart">
+        <div class="min-w-0 flex">
+          <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate
+            sm:text-3xl sm:tracking-tight">Hillchart Creator</h2>
+        </div>
+        <div class="mt-4 flex-1 md:mt-0 md:ml-4">
+          <form class="sm:flex justify-end">
+            <label for="url-field" class="sr-only">Email
+              address</label>
+            <input id="url-field" type="text"
+              disabled="disabled"
+              class="w-full rounded-md flex-1 border-gray-900 px-3 py-2
+              placeholder-gray-500 focus:border-indigo-500 focus:ring-indigo-500
+              sm:max-w-xs text-gray-400 min-w-xl" placeholder=""
+              value="">
+            <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3
+              sm:flex-shrink-0">
+              <button type="button"
+                onclick="copyDisabledInput('url-field')"
+                class="flex w-full items-center
+                justify-center
+                rounded-md border border-transparent bg-indigo-600 px-3 py-2
+                text-base font-medium text-white hover:bg-indigo-700
+                focus:outline-none focus:ring-2 focus:ring-indigo-500
+                focus:ring-offset-2">Copy URL</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
 
-</head>
+    <div class="max-w-5xl mx-auto">
+      <canvas width="1024" height="512" id="main"></canvas>
+    </div>
 
-<body>
-    <canvas width="1024" height="512" id="MainCanvas"></canvas>
-  <script src="HillChart.js"></script>
-  <script>main();</script>
-</body>
+    <div class="max-w-5xl my-6 mx-auto flex justify-center items-center
+      gap-x-10">
+
+      <div>
+        <button type="button" onclick="copyImage()" class="inline-flex
+          items-center rounded-md border
+          border-transparent bg-indigo-600 px-6 py-3 text-base font-medium
+          text-white shadow-sm hover:bg-indigo-700 focus:outline-none
+          focus:ring-2
+          focus:ring-indigo-500 focus:ring-offset-2">Copy Image</button>
+      </div>
+
+    </div>
+
+    <div class="max-w-5xl my-6 mx-auto hidden">
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-xl font-semibold text-gray-900">Users</h1>
+          <p class="mt-2 text-sm text-gray-700">A list of all the users in your
+            account including their name, title, email and role.</p>
+        </div>
+      </div>
+      <div class="mt-2 flex flex-col">
+        <div class="">
+          <div class="inline-block min-w-full py-2 align-middle">
+            <div class="overflow-hidden shadow-sm ring-1 ring-black
+              ring-opacity-5">
+              <table class="min-w-full divide-y divide-gray-300">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm
+                      font-semibold text-gray-900 sm:pl-6 lg:pl-8">Name</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm
+                      font-semibold text-gray-900">Title</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm
+                      font-semibold text-gray-900">Email</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm
+                      font-semibold text-gray-900">Role</th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6
+                      lg:pr-8">
+                      <span class="sr-only">Edit</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm
+                      font-medium text-gray-900 sm:pl-6 lg:pl-8">Lindsay Walton</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm
+                      text-gray-500">Front-end Developer</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm
+                      text-gray-500">lindsay.walton@example.com</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm
+                      text-gray-500">Member</td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4
+                      text-right text-sm font-medium sm:pr-6 lg:pr-8">
+                      <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit<span
+                          class="sr-only">, Lindsay Walton</span></a>
+                    </td>
+                  </tr>
+
+                  <!-- More people... -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="hillchart.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

@@ -1,7 +1,18 @@
-#MainCanvas
+body {
+    /* padding-top: 50px; */
+    background: #f9f9f9;
+}
+
+
+#main
 {
-    width:1024px;
-    height:512px;
+    width: 1024px;
+    max-width: 100%;
+    height: 512px;
+    margin: 0 auto;
+    display: flex;
+    border: dashed #ccc 3px;
+    border-radius: 10px;
 }
 
 *:focus
